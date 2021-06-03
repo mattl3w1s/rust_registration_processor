@@ -2,6 +2,7 @@ use actix_web::{web, App, HttpServer};
 use fuzzywuzzy::{process, utils, fuzz};
 use std::{sync::Arc, collections::{HashSet, HashMap}};
 use std::str::Split;
+use std::fmt::Error;
 
 
 fn get_match(name: &str, choices: &Vec<String>) -> String {
@@ -19,13 +20,13 @@ fn create_match_choices() -> Vec<String> {
 }
 struct ApplicationData {
     choices: Vec<String>,
-    word_counter: HashMap<&'static str, i64>
+    word_counter: HashMap<&'static str, i32>
 }
 
 impl ApplicationData {
     fn new() -> ApplicationData {
         let choices = create_match_choices();
-        let mut word_counter: HashMap<&'static str, i64> = HashMap::new();
+        let mut word_counter: HashMap<&'static str, i32> = HashMap::new();
         word_counter.insert("abbott", 5);
         word_counter.insert("llc", 50);
         word_counter.insert("fresenius", 4);
@@ -35,12 +36,12 @@ impl ApplicationData {
     fn matcher(&self, name: &str) -> String {
         get_match(name, &self.choices)
     }
-    fn uniqueness(&self, word: &str) -> f64 {
+    fn uniqueness(&self, word: &str) -> f32 {
         let word_sequence: Split<char> = word.split(' ');
-        let mut uniqueness: f64 = 0.0;
+        let mut uniqueness: f32 = 0.0;
         for word in word_sequence {
-            let count = self.word_counter.get(word).unwrap();
-            uniqueness += 1.0/(*count as f64);
+            let count: i32 = *self.word_counter.get(word).unwrap();
+            uniqueness += 1.0/(count as f32);
         }
         uniqueness.powf(0.5);
         uniqueness
